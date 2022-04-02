@@ -243,5 +243,5 @@ in_area = 0.8
 clipLength = int((1 - math.sqrt(in_area)) * train_length / 2)
 img_data, img_trans, img_proj = readTif(img_list[0])
 data_result = TTA(img_data , clipLength, model_path)
-savepath = r'H:\DL\模型测试\GF2_PMS1_E89.8_N35.6_20201231\att\TTA.tif'
+savepath = r''
 writeTiff(data_result, img_trans, img_proj, savepath)
