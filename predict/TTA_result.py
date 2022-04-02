@@ -13,16 +13,16 @@ train_length = 1024
 def readTif(fileName):
     dataset = gdal.Open(fileName)
     if dataset == None:
-        print(fileName + "ÎÄ¼şÎŞ·¨´ò¿ª")
-    #  Õ¤¸ñ¾ØÕóµÄÁĞÊı
+        print(fileName + "æ–‡ä»¶æ— æ³•æ‰“å¼€")
+    #  æ …æ ¼çŸ©é˜µçš„åˆ—æ•°
     width = dataset.RasterXSize
-    #  Õ¤¸ñ¾ØÕóµÄĞĞÊı
+    #  æ …æ ¼çŸ©é˜µçš„è¡Œæ•°
     height = dataset.RasterYSize
-    #  »ñÈ¡Êı¾İ
+    #  è·å–æ•°æ®
     data = dataset.ReadAsArray(0, 0, width, height)
-    #»ñÈ¡µØÀíĞÅÏ¢
+    #è·å–åœ°ç†ä¿¡æ¯
     geotans = dataset.GetGeoTransform()
-    #»ñÈ¡Í¶Ó°
+    #è·å–æŠ•å½±
     proj = dataset.GetProjection()
     return data, geotans, proj
 
@@ -38,30 +38,30 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
     elif len(im_data.shape) == 2:
         im_data = np.array([im_data])
         im_bands,im_height, im_width =im_data.shape
-    # ´´½¨ÎÄ¼ş
+    # åˆ›å»ºæ–‡ä»¶
     driver = gdal.GetDriverByName("GTiff")
     dataset = driver.Create(path, int(im_width), int(im_height), int(im_bands), datatype)
     if (dataset != None):
-        dataset.SetGeoTransform(im_geotrans)  # Ğ´Èë·ÂÉä±ä»»²ÎÊı
-        dataset.SetProjection(im_proj)  # Ğ´ÈëÍ¶Ó°
+        dataset.SetGeoTransform(im_geotrans)  # å†™å…¥ä»¿å°„å˜æ¢å‚æ•°
+        dataset.SetProjection(im_proj)  # å†™å…¥æŠ•å½±
     for i in range(im_bands):
         dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
     del dataset
 
 def clipTiff(data, cliplength):
-    #´æ´¢²Ã¼ôÊı¾İ
+    #å­˜å‚¨è£å‰ªæ•°æ®
     clip_tiff_list = []
-    #  ÁĞÉÏÍ¼Ïñ¿éÊıÄ¿(¹²¼¸ĞĞ)
+    #  åˆ—ä¸Šå›¾åƒå—æ•°ç›®(å…±å‡ è¡Œ)
     RowNum = int((data.shape[1] - cliplength * 2) / (train_length - cliplength * 2))
-    #  ĞĞÉÏÍ¼Ïñ¿éÊıÄ¿(¹²¼¸ÁĞ)
+    #  è¡Œä¸Šå›¾åƒå—æ•°ç›®(å…±å‡ åˆ—)
     ColumnNum = int((data.shape[2] - cliplength * 2) / (train_length - cliplength * 2))
     for i in range(RowNum):
         for j in range(ColumnNum):
             clip = data[:, i * (train_length - cliplength * 2) : i * (train_length - cliplength * 2) + train_length,
                            j * (train_length - cliplength * 2) : j * (train_length - cliplength * 2) + train_length]
             clip_tiff_list.append(clip)
-    #  ¿¼ÂÇµ½ĞĞÁĞ»áÓĞÊ£ÓàµÄÇé¿ö£¬ÏòÇ°²Ã¼ôÒ»ĞĞºÍÒ»ÁĞ
-    #Èç¹ûÓĞÊ£ÓàµÄÇé¿öÍùÇ°²Ã¼ôÒ»ÁĞ
+    #  è€ƒè™‘åˆ°è¡Œåˆ—ä¼šæœ‰å‰©ä½™çš„æƒ…å†µï¼Œå‘å‰è£å‰ªä¸€è¡Œå’Œä¸€åˆ—
+    #å¦‚æœæœ‰å‰©ä½™çš„æƒ…å†µå¾€å‰è£å‰ªä¸€åˆ—
     remainder_column = (data.shape[2] - cliplength * 2) % (train_length - cliplength * 2)
     if remainder_column == 0:
         Column_sum = ColumnNum
@@ -71,7 +71,7 @@ def clipTiff(data, cliplength):
                         (data.shape[2] - train_length) : data.shape[2]]
             clip_tiff_list.insert((i + 1)*ColumnNum + i, clip)
         Column_sum = ColumnNum + 1
-    #Èç¹ûÓĞÊ£ÓàµÄÇé¿öÍùÇ°²Ã¼ôÒ»ĞĞ
+    #å¦‚æœæœ‰å‰©ä½™çš„æƒ…å†µå¾€å‰è£å‰ªä¸€è¡Œ
     remainder_row = (data.shape[1] - cliplength * 2) % (train_length - cliplength * 2)
     if remainder_row == 0:
         Row_sum = RowNum
@@ -81,14 +81,14 @@ def clipTiff(data, cliplength):
                        i * (train_length - cliplength * 2) : i * (train_length - cliplength * 2) + train_length]
             clip_tiff_list.append(clip)
         Row_sum = RowNum + 1
-    #×îºóÓÒÏÂ½ÇÒ»Ğ¡¿é¿ÕÈ±
+    #æœ€åå³ä¸‹è§’ä¸€å°å—ç©ºç¼º
     if remainder_column != 0 and remainder_row != 0:
         clip = data[ : , (data.shape[1] - train_length): data.shape[1], (data.shape[2] - train_length): data.shape[2]]
         clip_tiff_list.append(clip)
     return clip_tiff_list, Row_sum, Column_sum, remainder_row, remainder_column
 
 
-#Ó°Ïñ¹éÒ»»¯´¦Àí£¬²¢ÇÒÉú³ÉÉú³ÉÆ÷
+#å½±åƒå½’ä¸€åŒ–å¤„ç†ï¼Œå¹¶ä¸”ç”Ÿæˆç”Ÿæˆå™¨
 def normalization_generator(data_list):
     for data in data_list:
         result = np.zeros(data.shape, dtype=np.float32)
@@ -96,37 +96,37 @@ def normalization_generator(data_list):
         yield result
 
 
-#Ó°ÏñÆ´½Ó
+#å½±åƒæ‹¼æ¥
 def mosicTiff(pred_data_list, row_sum, col_sum, remainder_row, remainder_column, shape, cliplength):
-    #´´½¨Ò»¸öÈ«ÊÇ0µÄÊı×éÓÃÀ´´¢´æÆ´½ÓµÄÖµ
+    #åˆ›å»ºä¸€ä¸ªå…¨æ˜¯0çš„æ•°ç»„ç”¨æ¥å‚¨å­˜æ‹¼æ¥çš„å€¼
     result = np.zeros(shape)
-    #¹²¶àÉÙĞĞÊı¾İ
-    #Ñù±¾´óĞ¡¼õÈ¥²Ã¼ô´óĞ¡µÄ±ß,×óÉÏ½ÇÓ°ÏñÆ´½ÓµÄ±ß³¤
+    #å…±å¤šå°‘è¡Œæ•°æ®
+    #æ ·æœ¬å¤§å°å‡å»è£å‰ªå¤§å°çš„è¾¹,å·¦ä¸Šè§’å½±åƒæ‹¼æ¥çš„è¾¹é•¿
     a_length = train_length - cliplength
-    # Ñù±¾´óĞ¡¼õÈ¥2¸ö²Ã¼ô´óĞ¡µÄ±ß,×óÉÏ½ÇÓ°ÏñÆ´½ÓµÄ±ß³¤
+    # æ ·æœ¬å¤§å°å‡å»2ä¸ªè£å‰ªå¤§å°çš„è¾¹,å·¦ä¸Šè§’å½±åƒæ‹¼æ¥çš„è¾¹é•¿
     b_length = train_length - 2*cliplength
     for i,item in enumerate(pred_data_list):
-        #²Ã¼ô×îºó¶¼ÁôÒ»ĞĞÒ»ÁĞ£¬Ôò»áÔÚÓÒÏÂ½ÇÁôÒ»Ğ¡¿é
-        #¼´ÊÊÓÃÓÚÓĞÊ£ÓàÒ²ÊÊÓÃÓÚÃ»ÓĞÊ£ÓàµÄÇé¿ö
+        #è£å‰ªæœ€åéƒ½ç•™ä¸€è¡Œä¸€åˆ—ï¼Œåˆ™ä¼šåœ¨å³ä¸‹è§’ç•™ä¸€å°å—
+        #å³é€‚ç”¨äºæœ‰å‰©ä½™ä¹Ÿé€‚ç”¨äºæ²¡æœ‰å‰©ä½™çš„æƒ…å†µ
         #if remainder_row !=0 and  remainder_column != 0:
-        #  ×î×ó²àÒ»ÁĞÌØÊâ¿¼ÂÇ£¬×ó±ßµÄ±ßÔµÒªÆ´½Ó½øÈ¥
+        #  æœ€å·¦ä¾§ä¸€åˆ—ç‰¹æ®Šè€ƒè™‘ï¼Œå·¦è¾¹çš„è¾¹ç¼˜è¦æ‹¼æ¥è¿›å»
         if i % col_sum == 0:
-            #  µÚÒ»ĞĞµÄÒªÔÙÌØÊâ¿¼ÂÇ£¬ÉÏ±ßµÄ±ßÔµÒª¿¼ÂÇ½øÈ¥
+            #  ç¬¬ä¸€è¡Œçš„è¦å†ç‰¹æ®Šè€ƒè™‘ï¼Œä¸Šè¾¹çš„è¾¹ç¼˜è¦è€ƒè™‘è¿›å»
             if i == 0:
                 result[0 : a_length, 0 : a_length] = item[0 : a_length, 0 : a_length]
-            # ×îºóÒ»ĞĞ
+            # æœ€åä¸€è¡Œ
             elif i/col_sum == row_sum - 1:
                 result[shape[0] - remainder_row - cliplength: shape[0], 0 : a_length] = \
                     item[train_length - remainder_row -cliplength: train_length, 0 : a_length]
             else:
                 j = int(i/col_sum)
                 result[a_length + (j-1) * b_length : a_length + j * b_length, 0 : a_length] = item[cliplength : a_length, 0 :a_length]
-        #  ×îÓÒ²àÒ»ÁĞÌØÊâ¿¼ÂÇ£¬ÓÒ±ßµÄ±ßÔµÒªÆ´½Ó½øÈ¥
+        #  æœ€å³ä¾§ä¸€åˆ—ç‰¹æ®Šè€ƒè™‘ï¼Œå³è¾¹çš„è¾¹ç¼˜è¦æ‹¼æ¥è¿›å»
         elif (i+1) % col_sum == 0:
-            #  µÚÒ»ĞĞµÄÒªÔÙÌØÊâ¿¼ÂÇ£¬ÉÏ±ßµÄ±ßÔµÒª¿¼ÂÇ½øÈ¥
+            #  ç¬¬ä¸€è¡Œçš„è¦å†ç‰¹æ®Šè€ƒè™‘ï¼Œä¸Šè¾¹çš„è¾¹ç¼˜è¦è€ƒè™‘è¿›å»
             if i + 1 == col_sum:
                 result[0: a_length, shape[1] - cliplength - remainder_row: shape[1]] = item[0 :a_length, train_length - remainder_row - cliplength: train_length]
-            #×îºóÒ»ĞĞ£¬×îºóÒ»¸öÓ°Ïñ
+            #æœ€åä¸€è¡Œï¼Œæœ€åä¸€ä¸ªå½±åƒ
             elif (i + 1)/col_sum == row_sum :
                 result[shape[0] - remainder_row - cliplength: shape[0], shape[1] - remainder_column: shape[1]] = \
                     item[train_length - remainder_row - cliplength: train_length,train_length - remainder_column:train_length]
@@ -135,26 +135,26 @@ def mosicTiff(pred_data_list, row_sum, col_sum, remainder_row, remainder_column,
                 result[a_length + (j - 1) * b_length : a_length + j * b_length, shape[1] - cliplength - remainder_column: shape[1]] = \
                     item[cliplength : a_length, train_length - remainder_column - cliplength : train_length]
         else:
-            #ÖĞ¼äµÄÇé¿öµÚÒ»ĞĞ
+            #ä¸­é—´çš„æƒ…å†µç¬¬ä¸€è¡Œ
             if  i > 0 and i < col_sum-1:
                 result[0:a_length, a_length + (i-1) *b_length: a_length + i * b_length] = item[0:a_length, cliplength:a_length]
-                #ÖĞ¼äĞĞ
+                #ä¸­é—´è¡Œ
             elif i > col_sum -1 and i < row_sum * col_sum - col_sum:
-                #jÓÃÀ´¶¨Î»µÚ¼¸ĞĞ£¬´Ó0¿ªÊ¼ËãÆğ
+                #jç”¨æ¥å®šä½ç¬¬å‡ è¡Œï¼Œä»0å¼€å§‹ç®—èµ·
                 j = int(i/col_sum)
-                #kÓÃÀ´¶¨Î»µÚ¼¸ÁĞ£¬´Ó0¿ªÊ¼ËãÆğ
+                #kç”¨æ¥å®šä½ç¬¬å‡ åˆ—ï¼Œä»0å¼€å§‹ç®—èµ·
                 k = i % col_sum
                 result[a_length + (j-1) * b_length: a_length + j * b_length, a_length + (k - 1) * b_length: a_length + k * b_length] = \
                     item[ cliplength: a_length, cliplength: a_length]
             else:
-                #×îºóÒ»ĞĞµÄÇé¿ö
-                #j¶¨Î»×îºóÒ»ĞĞµÄÁĞÊı£¬´Ó0¿ªÊ¼Ëã
+                #æœ€åä¸€è¡Œçš„æƒ…å†µ
+                #jå®šä½æœ€åä¸€è¡Œçš„åˆ—æ•°ï¼Œä»0å¼€å§‹ç®—
                 j = col_sum - (row_sum * col_sum - i)
                 result[shape[0] - remainder_row -cliplength: shape[0], a_length + (j - 1) * b_length: a_length + j * b_length] = \
                     item[train_length - remainder_row - cliplength: train_length, cliplength: a_length]
     return result
 
-#Ä£ĞÍÓïÒå·Ö¸î
+#æ¨¡å‹è¯­ä¹‰åˆ†å‰²
 def predict(Model_Path, img_nor):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = BNDDeepLab(in_ch=4, num_classes=1, backbone="resnet34", downsample_factor=16)
@@ -167,15 +167,15 @@ def predict(Model_Path, img_nor):
         with torch.no_grad():
             img = np.array([i])
             img_tensor = torch.from_numpy(img)
-            # ½«tensor¿½±´µ½deviceÖĞ£¬Ö»ÓÃcpu¾ÍÊÇ¿½±´µ½cpuÖĞ£¬ÓÃcuda¾ÍÊÇ¿½±´µ½cudaÖĞ¡£
+            # å°†tensoræ‹·è´åˆ°deviceä¸­ï¼Œåªç”¨cpuå°±æ˜¯æ‹·è´åˆ°cpuä¸­ï¼Œç”¨cudaå°±æ˜¯æ‹·è´åˆ°cudaä¸­ã€‚
             img_tensor = img_tensor.to(device=device)
             pred = model(img_tensor)
-            # ÌáÈ¡½á¹û
+            # æå–ç»“æœ
             if class_style == 'two_class':
                 pred = torch.sigmoid(pred)
-                #»ñÈ¡onehotÀà±ğÏÂ±ê£¬¾Í¿ÉÒÔµÃ³öËù·Ö³öµÄÊÇÄÄ¸öÀà
+                #è·å–onehotç±»åˆ«ä¸‹æ ‡ï¼Œå°±å¯ä»¥å¾—å‡ºæ‰€åˆ†å‡ºçš„æ˜¯å“ªä¸ªç±»
                 print(pred.shape)
-                #½«ËÄÎ¬½«Îª¶şÎ¬
+                #å°†å››ç»´å°†ä¸ºäºŒç»´
                 pred = np.array(pred.data.cpu()[0])[0]
             else:
                 pred = pred[0]
@@ -192,40 +192,40 @@ def predict(Model_Path, img_nor):
             print('finish')
     return Pred_list
 
-#Ô¤´¦Àí
+#é¢„å¤„ç†
 def processing(im_data,ClipLength, Model_Path):
-    # ¼ô²ÃÓ°Ïñ
+    # å‰ªè£å½±åƒ
     clip_list, row_sum, col_sum, re_row, re_col = clipTiff(im_data, ClipLength)
     print(row_sum, col_sum)
-    # ¶ÔÊı¾İ½øĞĞ¹éÒ»»¯´¦Àí
+    # å¯¹æ•°æ®è¿›è¡Œå½’ä¸€åŒ–å¤„ç†
     img_normalization = normalization_generator(clip_list)
-    # ½øĞĞÔ¤²â
+    # è¿›è¡Œé¢„æµ‹
     pred_list = predict(Model_Path, img_normalization)
     result_shape = (im_data.shape[1], im_data.shape[2])
-    # Æ´½ÓÓ°Ïñ
+    # æ‹¼æ¥å½±åƒ
     result = mosicTiff(pred_list, row_sum, col_sum, re_row, re_col, result_shape, ClipLength)
     return result
 
-# Êı¾İÔöÇ¿
+# æ•°æ®å¢å¼º
 def TTA(im_data, ClipLength, Model_Path):
-    #  Í¼ÏñË®Æ½·­×ª
-    im_data_hor = np.flip(im_data, axis=2)  # Êı¾İÊÇ3Î¬
-    #  Í¼Ïñ´¹Ö±·­×ª
+    #  å›¾åƒæ°´å¹³ç¿»è½¬
+    im_data_hor = np.flip(im_data, axis=2)  # æ•°æ®æ˜¯3ç»´
+    #  å›¾åƒå‚ç›´ç¿»è½¬
     im_data_vec = np.flip(im_data, axis=1)
-    #  Í¼Ïñ¶Ô½Ç¾µÏñ
+    #  å›¾åƒå¯¹è§’é•œåƒ
     im_data_dia = np.flip(im_data_vec, axis=2)
-    # Í¼Æ¬Ë³Ê±ÕëĞı×ª90¡ã
+    # å›¾ç‰‡é¡ºæ—¶é’ˆæ—‹è½¬90Â°
     im_data_rotz = np.rot90(im_data, -1, (1, 2))
-    # Í¼Æ¬ÄæÊ±ÕëĞı×ª90¡ã
+    # å›¾ç‰‡é€†æ—¶é’ˆæ—‹è½¬90Â°
     im_data_rotn = np.rot90(im_data, 1, (1, 2))
-    #Ô¤²â
+    #é¢„æµ‹
     data_result = processing(img_data, ClipLength, Model_Path)
     data_hor_result = processing(im_data_hor, ClipLength, Model_Path)
     data_vec_result = processing(im_data_vec, ClipLength, Model_Path)
     data_dia_result = processing(im_data_dia, ClipLength, Model_Path)
     data_rotz_result = processing(im_data_rotz, ClipLength, Model_Path)
     data_rotn_result = processing(im_data_rotn, ClipLength, Model_Path)
-    #»¹Ô­
+    #è¿˜åŸ
     data_hor_result = np.flip(data_hor_result, axis=1)
     data_vec_result = np.flip(data_vec_result, axis=0)
     data_dia_result = np.flip(np.flip(data_dia_result, axis=0), axis=1)
@@ -243,5 +243,5 @@ in_area = 0.8
 clipLength = int((1 - math.sqrt(in_area)) * train_length / 2)
 img_data, img_trans, img_proj = readTif(img_list[0])
 data_result = TTA(img_data , clipLength, model_path)
-savepath = r'H:\DL\Ä£ĞÍ²âÊÔ\GF2_PMS1_E89.8_N35.6_20201231\att\TTA.tif'
+savepath = r'H:\DL\æ¨¡å‹æµ‹è¯•\GF2_PMS1_E89.8_N35.6_20201231\att\TTA.tif'
 writeTiff(data_result, img_trans, img_proj, savepath)
