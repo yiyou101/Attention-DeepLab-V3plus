@@ -30,8 +30,8 @@ class ResNet34(nn.Module):  # 4*1024*1024
             nn.ReLU(inplace=True),
             nn.MaxPool2d(3, 2, 1)  # kernel_size=3, stride=2, padding=1
         )  # 56x56x64,64*2048*2048
-        self.layer1 = self.make_layer(64, 64, 3)  # 56x56x64,layer1²ãÊäÈëÊä³öÒ»Ñù£¬make_layerÀï£¬Ó¦¸Ã²»ÓÃ¶Ôshortcut½øĞĞ´¦Àí£¬µ«ÊÇÎªÁËÍ³Ò»²Ù×÷¡£¡£¡£
-        self.layer2 = self.make_layer(64, 128, 4, stride=2)  # µÚÒ»¸östride=2,Ê£ÏÂ3¸östride=1;28x28x128,128*256*256
+        self.layer1 = self.make_layer(64, 64, 3)  # 56x56x64,layer1å±‚è¾“å…¥è¾“å‡ºä¸€æ ·ï¼Œmake_layeré‡Œï¼Œåº”è¯¥ä¸ç”¨å¯¹shortcutè¿›è¡Œå¤„ç†ï¼Œä½†æ˜¯ä¸ºäº†ç»Ÿä¸€æ“ä½œã€‚ã€‚ã€‚
+        self.layer2 = self.make_layer(64, 128, 4, stride=2)  # ç¬¬ä¸€ä¸ªstride=2,å‰©ä¸‹3ä¸ªstride=1;28x28x128,128*256*256
         self.layer3 = self.make_layer(128, 256, 6, stride=2,dilation=2)  # 14x14x256;256*128*128
         self.layer4 = self.make_layer(256, 512, 3, stride=2,dilation=4)  # 7x7x512;512*64*64
         self.shortcut_conv = nn.Sequential(
@@ -41,16 +41,16 @@ class ResNet34(nn.Module):  # 4*1024*1024
         )
     
     def make_layer(self, in_ch, out_ch, block_num, stride=1,dilation=1):
-        # µ±Î¬¶ÈÔö¼ÓÊ±£¬¶Ôshortcut½øĞĞoption BµÄ´¦Àí
-        shortcut = nn.Sequential(  # Ê×¸öResidualBlockĞèÒª½øĞĞoption B´¦Àí
-            nn.Conv2d(in_ch, out_ch, 1, stride, bias=False),  # 1x1¾í»ıÓÃÓÚÔö¼ÓÎ¬¶È£»stride=2ÓÃÓÚ¼õ°ësize£»Îª¼ò»¯²»¿¼ÂÇÆ«²î
+        # å½“ç»´åº¦å¢åŠ æ—¶ï¼Œå¯¹shortcutè¿›è¡Œoption Bçš„å¤„ç†
+        shortcut = nn.Sequential(  # é¦–ä¸ªResidualBlockéœ€è¦è¿›è¡Œoption Bå¤„ç†
+            nn.Conv2d(in_ch, out_ch, 1, stride, bias=False),  # 1x1å·ç§¯ç”¨äºå¢åŠ ç»´åº¦ï¼›stride=2ç”¨äºå‡åŠsizeï¼›ä¸ºç®€åŒ–ä¸è€ƒè™‘åå·®
             nn.BatchNorm2d(out_ch)
         )
         layers = []
         layers.append(ResidualBlock(in_ch, out_ch, stride, shortcut=shortcut))
 
         for i in range(1, block_num):
-            layers.append(ResidualBlock(out_ch, out_ch ,dilation=dilation))  # ºóÃæµÄ¼¸¸öResidualBlock,shortcutÖ±½ÓÏà¼Ó
+            layers.append(ResidualBlock(out_ch, out_ch ,dilation=dilation))  # åé¢çš„å‡ ä¸ªResidualBlock,shortcutç›´æ¥ç›¸åŠ 
         return nn.Sequential(*layers)
 
     def forward(self, x):  # 224x224x3
@@ -61,18 +61,18 @@ class ResNet34(nn.Module):  # 4*1024*1024
         x = self.layer3(x)  # 14x14x256
         x = self.layer4(x)  # 7x7x512
         #x = F.avg_pool2d(x, 7)  # 1x1x512
-        #x = x.view(x.size(0), -1)  # ½«Êä³öÀ­ÉìÎªÒ»ĞĞ£º1x512
+        #x = x.view(x.size(0), -1)  # å°†è¾“å‡ºæ‹‰ä¼¸ä¸ºä¸€è¡Œï¼š1x512
         #x = self.fc(x)  # 1x1
-        # nn.BCELoss:¶ş·ÖÀàÓÃµÄ½»²æìØ£¬ÓÃµÄÊ±ºòĞèÒªÔÚ¸Ã²ãÇ°Ãæ¼ÓÉÏ Sigmoid º¯Êı
-        return low_feature,x  # 1x1£¬½«½á¹û»¯Îª(0~1)Ö®¼ä
+        # nn.BCELoss:äºŒåˆ†ç±»ç”¨çš„äº¤å‰ç†µï¼Œç”¨çš„æ—¶å€™éœ€è¦åœ¨è¯¥å±‚å‰é¢åŠ ä¸Š Sigmoid å‡½æ•°
+        return low_feature,x  # 1x1ï¼Œå°†ç»“æœåŒ–ä¸º(0~1)ä¹‹é—´
 
-#Í¨µÀ×¢ÒâÁ¦
+#é€šé“æ³¨æ„åŠ›
 class ChannelAttentionModule(nn.Module):
     def __init__(self, channel, ratio=16):
         super(ChannelAttentionModule, self).__init__()
-        #×öÆÀ¾ù³Ø»¯
+        #åšè¯„å‡æ± åŒ–
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        #×ö×î´ó³Ø»¯
+        #åšæœ€å¤§æ± åŒ–
         self.max_pool = nn.AdaptiveMaxPool2d(1)
 
         self.shared_MLP = nn.Sequential(
@@ -115,9 +115,9 @@ class CBAM(nn.Module):
         out = self.spatial_attention(out) * out
         return out
 
-#   ASPPÌØÕ÷ÌáÈ¡Ä£¿é
-#   ÀûÓÃ²»Í¬ÅòÕÍÂÊµÄÅòÕÍ¾í»ı½øĞĞÌØÕ÷ÌáÈ¡£¬¾í»ıºË´óĞ¡n=k+£¨k-1£©*(d-1)
-#   paddingºÍdilation´óĞ¡Ò»ÑùÊ±£¬³ß´ç²»±ä
+#   ASPPç‰¹å¾æå–æ¨¡å—
+#   åˆ©ç”¨ä¸åŒè†¨èƒ€ç‡çš„è†¨èƒ€å·ç§¯è¿›è¡Œç‰¹å¾æå–ï¼Œå·ç§¯æ ¸å¤§å°n=k+ï¼ˆk-1ï¼‰*(d-1)
+#   paddingå’Œdilationå¤§å°ä¸€æ ·æ—¶ï¼Œå°ºå¯¸ä¸å˜
 class ASPP(nn.Module):
     def __init__(self, in_ch, out_ch, rate=1, bn_mom=0.1):
         super(ASPP, self).__init__()
@@ -161,14 +161,14 @@ class ASPP(nn.Module):
     def forward(self, x):
         [b, c, row, col] = x.size()
         # -----------------------------------------#
-        #   Ò»¹²Îå¸ö·ÖÖ§
+        #   ä¸€å…±äº”ä¸ªåˆ†æ”¯
         # -----------------------------------------#
         conv1x1 = self.branch1(x)
         conv3x3_1 = self.branch2(x)
         conv3x3_2 = self.branch3(x)
         conv3x3_3 = self.branch4(x)
         # -----------------------------------------#
-        #   µÚÎå¸ö·ÖÖ§£¬È«¾ÖÆ½¾ù³Ø»¯+¾í»ı
+        #   ç¬¬äº”ä¸ªåˆ†æ”¯ï¼Œå…¨å±€å¹³å‡æ± åŒ–+å·ç§¯
         # -----------------------------------------#
         global_feature = torch.mean(x, 2, True)
         global_feature = torch.mean(global_feature, 3, True)
@@ -176,11 +176,11 @@ class ASPP(nn.Module):
         global_feature = self.branch5_bn(global_feature)
         global_feature = self.branch5_relu(global_feature)
         global_feature = F.interpolate(global_feature, (row, col), None, 'bilinear', True)
-        #µÚÁù¸ö·ÖÖ§¼ÓÉÏCABM
+        #ç¬¬å…­ä¸ªåˆ†æ”¯åŠ ä¸ŠCABM
         att_feature = self.branch6(x)
         # -----------------------------------------#
-        #   ½«Îå¸ö·ÖÖ§µÄÄÚÈİ¶ÑµşÆğÀ´
-        #   È»ºó1x1¾í»ıÕûºÏÌØÕ÷¡£
+        #   å°†äº”ä¸ªåˆ†æ”¯çš„å†…å®¹å †å èµ·æ¥
+        #   ç„¶å1x1å·ç§¯æ•´åˆç‰¹å¾ã€‚
         # -----------------------------------------#
         feature_cat = torch.cat([conv1x1, conv3x3_1, conv3x3_2, conv3x3_3, global_feature,att_feature], dim=1)
         result = self.conv_cat(feature_cat)
@@ -194,30 +194,30 @@ class BNDDeepLab(nn.Module):
         self.upsampling = nn.UpsamplingBilinear2d(scale_factor=upsampling) if upsampling > 1 else nn.Identity()
         if backbone == "resnet34":
             # ----------------------------------#
-            #   »ñµÃÁ½¸öÌØÕ÷²ã
-            #   Ç³²ãÌØÕ÷    [128,128,256]
-            #   Ö÷¸É²¿·Ö    [30,30,2048]
+            #   è·å¾—ä¸¤ä¸ªç‰¹å¾å±‚
+            #   æµ…å±‚ç‰¹å¾    [128,128,256]
+            #   ä¸»å¹²éƒ¨åˆ†    [30,30,2048]
             # ----------------------------------#
             self.backbone = ResNet34(in_ch)
             in_channels = 512
             low_level_channels = 128
         if backbone == "resnet18":
             # ----------------------------------#
-            #   »ñµÃÁ½¸öÌØÕ÷²ã
-            #   Ç³²ãÌØÕ÷    [128,128,256]
-            #   Ö÷¸É²¿·Ö    [30,30,2048]
+            #   è·å¾—ä¸¤ä¸ªç‰¹å¾å±‚
+            #   æµ…å±‚ç‰¹å¾    [128,128,256]
+            #   ä¸»å¹²éƒ¨åˆ†    [30,30,2048]
             # ----------------------------------#
             self.backbone = ResNet18(in_ch)
             in_channels = 512
             low_level_channels = 128
         # -----------------------------------------#
-        #   ASPPÌØÕ÷ÌáÈ¡Ä£¿é
-        #   ÀûÓÃ²»Í¬ÅòÕÍÂÊµÄÅòÕÍ¾í»ı½øĞĞÌØÕ÷ÌáÈ¡
+        #   ASPPç‰¹å¾æå–æ¨¡å—
+        #   åˆ©ç”¨ä¸åŒè†¨èƒ€ç‡çš„è†¨èƒ€å·ç§¯è¿›è¡Œç‰¹å¾æå–
         # -----------------------------------------#
         self.aspp = ASPP(in_ch=in_channels, out_ch=256, rate=16 // downsample_factor)
 
         # ----------------------------------#
-        #   Ç³²ãÌØÕ÷±ß
+        #   æµ…å±‚ç‰¹å¾è¾¹
         # ----------------------------------#
         self.low_att = nn.Sequential(
             CBAM(low_level_channels),
@@ -260,9 +260,9 @@ class BNDDeepLab(nn.Module):
     def forward(self, x):
         H, W = x.size(2), x.size(3)
         # -----------------------------------------#
-        #   »ñµÃÁ½¸öÌØÕ÷²ã
-        #   low_level_features: Ç³²ãÌØÕ÷-½øĞĞ¾í»ı´¦Àí
-        #   x : Ö÷¸É²¿·Ö-ÀûÓÃASPP½á¹¹½øĞĞ¼ÓÇ¿ÌØÕ÷ÌáÈ¡
+        #   è·å¾—ä¸¤ä¸ªç‰¹å¾å±‚
+        #   low_level_features: æµ…å±‚ç‰¹å¾-è¿›è¡Œå·ç§¯å¤„ç†
+        #   x : ä¸»å¹²éƒ¨åˆ†-åˆ©ç”¨ASPPç»“æ„è¿›è¡ŒåŠ å¼ºç‰¹å¾æå–
         # -----------------------------------------#
         #x = self.conv2d(x)
         #x = self.upsampling(x)
@@ -271,8 +271,8 @@ class BNDDeepLab(nn.Module):
         #low_level_features = self.low_att(low_level_features)
         #low_level_features = self.shortcut_conv(low_level_features)
         # -----------------------------------------#
-        #   ½«¼ÓÇ¿ÌØÕ÷±ßÉÏ²ÉÑù
-        #   ÓëÇ³²ãÌØÕ÷¶ÑµşºóÀûÓÃ¾í»ı½øĞĞÌØÕ÷ÌáÈ¡
+        #   å°†åŠ å¼ºç‰¹å¾è¾¹ä¸Šé‡‡æ ·
+        #   ä¸æµ…å±‚ç‰¹å¾å †å ååˆ©ç”¨å·ç§¯è¿›è¡Œç‰¹å¾æå–
         # -----------------------------------------#
         x = F.interpolate(x, size=(low_level_features.size(2), low_level_features.size(3)), mode='bilinear',
                           align_corners=True)
