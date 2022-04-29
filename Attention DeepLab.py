@@ -32,8 +32,8 @@ class ResNet34(nn.Module):  # 4*1024*1024
         )  # 56x56x64,64*2048*2048
         self.layer1 = self.make_layer(64, 64, 3)  # 56x56x64,layer1层输入输出一样，make_layer里，应该不用对shortcut进行处理，但是为了统一操作。。。
         self.layer2 = self.make_layer(64, 128, 4, stride=2)  # 第一个stride=2,剩下3个stride=1;28x28x128,128*256*256
-        self.layer3 = self.make_layer(128, 256, 6, stride=2,dilation=2)  # 14x14x256;256*128*128
-        self.layer4 = self.make_layer(256, 512, 3, stride=2,dilation=4)  # 7x7x512;512*64*64
+        self.layer3 = self.make_layer(128, 256, 6, stride=2,dilation=1)  # 14x14x256;256*128*128
+        self.layer4 = self.make_layer(256, 512, 3, stride=2,dilation=1)  # 7x7x512;512*64*64
         self.shortcut_conv = nn.Sequential(
             nn.Conv2d(128, 32, 1),
             nn.BatchNorm2d(32),
