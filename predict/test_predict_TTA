@@ -12,15 +12,10 @@ def readTif(fileName):
     dataset = gdal.Open(fileName)
     if dataset == None:
         print(fileName + "文件无法打开")
-    #  栅格矩阵的列数
     width = dataset.RasterXSize
-    #  栅格矩阵的行数
     height = dataset.RasterYSize
-    #  获取数据
     data = dataset.ReadAsArray(0, 0, width, height)
-    #获取地理信息
     geotans = dataset.GetGeoTransform()
-    #获取投影
     proj = dataset.GetProjection()
     return data, geotans, proj
 
@@ -36,20 +31,18 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
     elif len(im_data.shape) == 2:
         im_data = np.array([im_data])
         im_bands,im_height, im_width =im_data.shape
-    # 创建文件
     driver = gdal.GetDriverByName("GTiff")
     dataset = driver.Create(path, int(im_width), int(im_height), int(im_bands), datatype)
     if (dataset != None):
-        dataset.SetGeoTransform(im_geotrans)  # 写入仿射变换参数
-        dataset.SetProjection(im_proj)  # 写入投影
+        dataset.SetGeoTransform(im_geotrans) 
+        dataset.SetProjection(im_proj)
     for i in range(im_bands):
         dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
     del dataset
 
-#模型语义分割
 def predict(Model_Path, img_nor):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = smp.DeepLabV3Plus(encoder_name='resnet34', in_channels=4, classes=1)
+    model = BNDDeepLab(encoder_name='resnet34', in_channels=4, classes=1)
     model.to(device)
     model.load_state_dict(torch.load(Model_Path))
     Pred_list = []
@@ -58,30 +51,21 @@ def predict(Model_Path, img_nor):
     for i in img_nor:
         with torch.no_grad():
             im_data = np.array(i)
-            #   图像水平翻转
-            im_data_hor = np.flip(i, axis=2)  # 数据是3维
-            #  图像垂直翻转
+            im_data_hor = np.flip(i, axis=2)  
             im_data_vec = np.flip(i, axis=1)
-            #  图像对角镜像
             im_data_dia = np.flip(im_data_vec, axis=2)
-            # 图片顺时针旋转90°
             im_data_rotz = np.rot90(i, -1, (1, 2))
-            # 图片逆时针旋转90°
             im_data_rotn = np.rot90(i, 1, (1, 2))
             img = np.array([im_data,im_data_hor,im_data_vec,im_data_dia,im_data_rotz,im_data_rotn])
             print(img.shape)
             preds = []
             for j in img:
                 img_tensor = torch.from_numpy(np.array([j]))
-                # 将tensor拷贝到device中，只用cpu就是拷贝到cpu中，用cuda就是拷贝到cuda中。
                 img_tensor = img_tensor.to(device=device)
                 pred = model(img_tensor)
-                # 提取结果
                 if class_style == 'two_class':
                     pred = torch.sigmoid(pred)
-                    #获取onehot类别下标，就可以得出所分出的是哪个类
                     print(pred.shape)
-                    #将四维将为二维
                     pred = np.array(pred.data.cpu()[0])[0]
                 else:
                     pred = pred[0]
@@ -93,7 +77,6 @@ def predict(Model_Path, img_nor):
                 #savepath = 'G:/DL/list2/' + str(a) + '.tif'
                 #a = a + 1
                 #writeTiff(pred, img_trans, img_proj, savepath)
-            # 还原
             preds = np.array(preds)
             print(preds.shape)
             preds[1] = np.flip(preds[1], axis=1)
@@ -107,30 +90,21 @@ def predict(Model_Path, img_nor):
         print('finish')
     return Pred_list
 
-#预处理
 def processing(im_data,ClipLength, Model_Path):
-    # 剪裁影像
     clip_list, row_sum, col_sum, re_row, re_col = clipTiff(im_data, ClipLength)
     print(row_sum, col_sum)
-    # 对数据进行归一化处理
     img_normalization = normalization_generator(clip_list)
-    # 进行预测
     pred_list = predict(Model_Path, img_normalization)
     result_shape = (im_data.shape[1], im_data.shape[2])
-    # 拼接影像
     result = mosicTiff(pred_list, row_sum, col_sum, re_row, re_col, result_shape, ClipLength)
     return result
 
-
-
 model_path = r'H:\DL\GF6-model\best_model'
-img_list = glob.glob(r"H:\DL\模型测试\GF6_PMS_E91.9_N32.8_20200819\GF6_PMS_E91.9_N32.8_20200819_L1A1120027898-测试区间.tif")
+img_list = glob.glob(r"")
 class_style = 'two_class'
-
-#剪裁所占面积r,相邻影像重叠面积为1-r^1/2,剪裁边长为(1-r^1/2)*训练样本边长/2
 in_area = 0.9
 clipLength = int((1 - math.sqrt(in_area)) * train_length / 2)
 img_data, img_trans, img_proj = readTif(img_list[0])
 data_result = processing(img_data , clipLength, model_path)
-savepath = r'H:\DL\模型测试\test\result2.tif'
+savepath = r''
 writeTiff(data_result, img_trans, img_proj, savepath)
