@@ -1,3 +1,3 @@
-Glacier extraction based on high spatial resolution remote sensing images using a deep learning approach with attention mechanism
+A deep learning approach to extract the glacier outlines
 ====
 # glacier-extraction
