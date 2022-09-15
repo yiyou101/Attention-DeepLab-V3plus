@@ -3,7 +3,7 @@ from osgeo import gdal
 import numpy as np
 import glob
 import math
-import segmentation_models_pytorch as smp
+from BDILDeepLabmodel import BNDDeepLab
 import cv2
 
 train_length = 1024
