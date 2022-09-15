@@ -2,7 +2,7 @@ A deep learning approach to extract the glacier outlines
 ====
 This repository contains code for extracting the glacier outlines in optical satellite imagery using deep learning. For an explanation of the concepts, ideas and evaluation, see publication below. Please cite our publication if you relied on it:
 
-###dataset:
+***dataset:
 
 The sample datasets of glacier are as follow:
 
