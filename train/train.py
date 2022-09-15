@@ -63,7 +63,7 @@ def train(train_img, train_label, opt_name, train_epoch, model_path, last_model)
         epoch.append(i)
         print('finish' + str(i) + 'epoch')
     #torch.save(model.state_dict(), last_model)
-    torch.save(model, last_model)  # 保存整个网络
+    torch.save(model, last_model)  
     plt.plot(epoch, losslist)
     plt.show()
 
