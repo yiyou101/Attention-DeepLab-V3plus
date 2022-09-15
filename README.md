@@ -18,5 +18,4 @@ More documentation is provided in the form of docstrings throughout the code.
 * **evaluation**: various scripts for running quantitative and qualitative evaluation
 * **experiments**: pytorch lightning module for running experiments in an easily configurable way
 * **modeling**: model architecture and parts
-* **trainer**: contains training scripts
-* **utils**: various utilities for data manipulation, visualization, etc.
+* **train**: contains training scripts
