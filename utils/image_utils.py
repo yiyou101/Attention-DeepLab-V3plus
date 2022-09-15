@@ -65,19 +65,6 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
         dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
     del dataset
 
-def split_train_val(image_paths, label_paths, val_index=0 , folds = 5):
-    train_image_paths, train_label_paths, val_image_paths, val_label_paths = [], [], [], [], [], []
-    for i in range(len(image_paths)):
-        if i % folds == val_index:
-            val_image_paths.append(image_paths[i])
-            val_label_paths.append(label_paths[i])
-        else:
-            train_image_paths.append(image_paths[i])
-            train_label_paths.append(label_paths[i])
-    print("Number of train images: ", len(train_image_paths))
-    print("Number of val images: ", len(val_image_paths))
-    return train_image_paths, train_label_paths, val_image_paths, val_label_paths
-
 def random_split_train_val(image_paths, label_paths, val_index=0):
     image_paths = glob.glob(image_paths + '/*.tif')
     label_paths = glob.glob(label_paths + '/*.tif')
