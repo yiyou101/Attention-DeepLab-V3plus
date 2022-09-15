@@ -123,12 +123,6 @@ class ASPP(nn.Module):
         self.branch5_bn = nn.BatchNorm2d(out_ch)
         self.branch5_relu = nn.ReLU(inplace=True)
 
-        self.branch6 = nn.Sequential(
-            CBAM(in_ch),
-            nn.BatchNorm2d(in_ch),
-            nn.ReLU(inplace=True),
-        )
-
         self.conv_cat = nn.Sequential(
             nn.Conv2d(out_ch * 5, out_ch, 1, 1, padding=0, bias=True),
             nn.BatchNorm2d(out_ch),
