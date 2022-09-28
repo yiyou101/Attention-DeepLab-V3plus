@@ -48,17 +48,6 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
         dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
     del dataset
 
-def img_enhance(img_data):
-    random_factor1 = np.random.randint(5, 20) / 10.  
-    color_image = ImageEnhance.Color(img_data).enhance(random_factor1)
-    random_factor2 = np.random.randint(5, 21) / 10.
-    brightness_image = ImageEnhance.Brightness(img_data).enhance(random_factor2)
-    random_factor3 = np.random.randint(5, 20) / 10.
-    contrast_image = ImageEnhance.Contrast(img_data).enhance(random_factor3)
-    random_factor4 = np.random.randint(5, 20) / 10.
-    sharp_image = ImageEnhance.Sharpness(img_data).enhance(random_factor4)
-    return color_image, brightness_image, contrast_image, sharp_image
-
 def enhance_data(imageList,labelList,train_image_path,train_label_path):
     for i in range(len(imageList)):
         im_width, im_height, im_bands, im_data, im_geotrans, im_proj = readTif(imageList[i])
@@ -94,24 +83,7 @@ def enhance_data(imageList,labelList,train_image_path,train_label_path):
         writeTiff(im_data_rotn, im_geotrans, im_proj, rotn_path)
         rotn = np.rot90(label, 1)
         rotn_path = train_label_path + '/' + 'rotnlabel_' + imagename
-        #writeTiff(rotn, im_geotrans, im_proj, rotn_path)
-        color_img, brightness_img, contrast_img, sharp_img = img_enhance(im_data)
-        color_path = train_image_path + '/' + 'color' + imagename
-        color_label = train_image_path + '/' + 'colorlabel_' + imagename
-        writeTiff(color_img, im_geotrans, im_proj, color_path)
-        #writeTiff(label, im_geotrans, im_proj, color_label)
-        brightness_path = train_image_path + '/' + 'brightness' + imagename
-        brightness_label = train_image_path + '/' + 'brightnesslabel_' + imagename
-        writeTiff(brightness_img, im_geotrans, im_proj, brightness_path)
-        #writeTiff(label, im_geotrans, im_proj, brightness_label)
-        contrast_path = train_image_path + '/' + 'contrast' + imagename
-        contrast_label = train_image_path + '/' + 'contrastlabel_' + imagename
-        writeTiff(contrast_img, im_geotrans, im_proj, contrast_path)
-        #writeTiff(label, im_geotrans, im_proj, contrast_label)
-        sharp_path = train_image_path + '/' + 'sharp' + imagename
-        sharp_label = train_image_path + '/' + 'sharplabel_' + imagename
-        writeTiff(sharp_img, im_geotrans, im_proj, sharp_path)
-        #writeTiff(label, im_geotrans, im_proj, sharp_label)
+
 
 if __name__ == '__main__':
     train_image_path = r""
