@@ -151,30 +151,6 @@ class BinaryDiceLoss(nn.Module):
         loss = 1 - dice_eff.sum() / N
         return loss
 
-class FocalLoss(torch.nn.Module):
-    def __init__(self, alpha=1, gamma=2, logits=False, reduce=True):
-        super(FocalLoss, self).__init__()
-        """
-                :param alpha_t: A list of weights for each class
-                :param gamma:
-        """
-        self.alpha = torch.tensor(alpha) if alpha else None
-        self.gamma = gamma
-        self.logits = logits
-        self.reduce = reduce
-
-    def forward(self, inputs, targets):
-        if self.alpha.device != inputs.device:
-            self.alpha = self.alpha.to(inputs)
-        CE = torch.nn.CrossEntropyLoss()
-        CE_loss = CE(inputs, targets)
-        pt = torch.exp(-CE_loss)
-        F_loss = self.alpha * (1 - pt) ** self.gamma * CE_loss
-        if self.reduce == 'avg':
-            return F_loss.mean()
-        else:
-            return F_loss.sum()
-
 class loss_joint(nn.Module):
     def __init__(self, loss_fn1, loss_fn2, weight):
         super(loss_joint, self).__init__()
