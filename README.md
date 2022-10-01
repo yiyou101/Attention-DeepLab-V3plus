@@ -2,6 +2,10 @@ A deep learning approach to extract the glacier outlines
 ====
 This repository contains code for extracting the glacier outlines in high spatial resolution remote sensing using deep learning. 
 
+For an explanation of the concepts, ideas and evaluation, see publication below. Please use the following citation when using the code for a publication:
+
+Chu, X., Yao, X., Duan, H., Chen, C., Li, J., and Pang, W.: Glacier extraction based on high spatial resolution remote sensing images using a deep learning approach with attention mechanism, The Cryosphere. https://doi.org/10.5194/tc-2022-61, 2022.
+
 ### dataset:
 
 The sample datasets of glacier are as follow:
