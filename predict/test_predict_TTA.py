@@ -99,7 +99,7 @@ def processing(im_data,ClipLength, Model_Path):
     result = mosicTiff(pred_list, row_sum, col_sum, re_row, re_col, result_shape, ClipLength)
     return result
 
-model_path = r'H:\DL\GF6-model\best_model'
+model_path = r''
 img_list = glob.glob(r"")
 class_style = 'two_class'
 in_area = 0.9
