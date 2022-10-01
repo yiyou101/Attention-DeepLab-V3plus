@@ -6,6 +6,8 @@ For an explanation of the concepts, ideas and evaluation, see publication below.
 
 Chu, X., Yao, X., Duan, H., Chen, C., Li, J., and Pang, W.: Glacier extraction based on high spatial resolution remote sensing images using a deep learning approach with attention mechanism, The Cryosphere. https://doi.org/10.5194/tc-2022-61, 2022.
 
+More documentation is provided in the form of docstrings throughout the code.
+
 ### dataset:
 
 The sample datasets of glacier are as follow:
