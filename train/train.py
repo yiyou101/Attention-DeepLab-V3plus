@@ -13,7 +13,7 @@ def train(train_img, train_label, opt_name, train_epoch, model_path, last_model)
     #writer = SummaryWriter()
     dataset = openDataset(train_img, train_label, 'softmax')
     train_loader = DataLoader(dataset=dataset, batch_size=10, shuffle=True, num_workers=0)
-    model = BNDDeepLab(in_ch=12, num_classes=2,backbone="resnet34", downsample_factor=16)
+    model = BNDDeepLab(in_ch=4, num_classes=1,backbone="resnet34", downsample_factor=16)
     if opt_name == 'SGD':
         opt = torch.optim.SGD(model.parameters(), lr=1e-4, momentum=0.9)
     else:
