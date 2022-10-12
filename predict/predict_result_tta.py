@@ -4,7 +4,7 @@ import numpy as np
 import glob
 import math
 import cv2
-from BDILDeepLabmodel import BNDDeepLab
+from Attention_DeepLab import BNDDeepLab
 
 train_length = 1024
 
