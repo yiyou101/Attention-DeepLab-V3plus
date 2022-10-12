@@ -5,7 +5,7 @@ import glob
 import math
 import cv2
 from dl_utils import test_openDataset
-from BDILDeepLabmodel import BNDDeepLab
+from Attention_DeepLab import BNDDeepLab
 from image_utils import readTif_info
 
 def writeTiff(im_data, im_geotrans, im_proj, path):
