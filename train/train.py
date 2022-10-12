@@ -5,9 +5,7 @@ import time
 from torch.utils.data import Dataset,DataLoader
 #from torch.utils.tensorboard import SummaryWriter
 from dl_utils import BinaryDiceLoss,openDataset,loss_joint,DiceLoss
-from GNDeepLabmodel import GNDeepLab
-from BDILDeepLabmodel import BNDDeepLab
-import segmentation_models_pytorch as smp
+from Attention DeepLab import BNDDeepLab
 
 #device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
