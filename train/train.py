@@ -5,7 +5,7 @@ import time
 from torch.utils.data import Dataset,DataLoader
 #from torch.utils.tensorboard import SummaryWriter
 from dl_utils import BinaryDiceLoss,openDataset,loss_joint,DiceLoss
-from Attention DeepLab import BNDDeepLab
+from Attention_DeepLab import BNDDeepLab
 
 #device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
