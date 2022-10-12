@@ -9,7 +9,7 @@ from torch.utils.data import Dataset,DataLoader
 import cv2
 from torch.utils.tensorboard import SummaryWriter
 from dl_utils import BinaryDiceLoss,openDataset,loss_joint,split_train_val,Binary_validation,validation_loss
-import Attention DeepLab 
+import Attention_DeepLab 
 
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
