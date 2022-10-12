@@ -1,4 +1,3 @@
-import segmentation_models_pytorch as smp
 import torch
 import glob
 import numpy as np
@@ -10,7 +9,7 @@ from torch.utils.data import Dataset,DataLoader
 import cv2
 from torch.utils.tensorboard import SummaryWriter
 from dl_utils import BinaryDiceLoss,openDataset,loss_joint,split_train_val,Binary_validation,validation_loss
-import udeepnet_dilate
+import Attention DeepLab 
 
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -22,7 +21,7 @@ def train(train_img, train_label, opt_name, train_epoch, model_path, last_model)
     val_data = openDataset(val_image_paths, val_label_paths, 'sigmoid')
     train_loader = DataLoader(dataset=dataset, batch_size=3, shuffle=True, num_workers=0)
     val_loader = DataLoader(dataset=val_data, batch_size=3, shuffle=True, num_workers=0)
-    model = udeepnet_dilate.BNDDeepLab(12,1)
+    model = Attention DeepLab.BNDDeepLab(12,1)
     if opt_name == 'SGD':
         opt = torch.optim.SGD(model.parameters(), lr=1e-4, momentum=0.9)
     else:
