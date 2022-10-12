@@ -3,7 +3,7 @@ from osgeo import gdal
 import numpy as np
 import glob
 import math
-from BDILDeepLabmodel import BNDDeepLab
+from Attention_DeepLab import BNDDeepLab
 import cv2
 
 train_length = 1024
