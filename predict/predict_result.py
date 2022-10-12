@@ -5,10 +5,7 @@ import glob
 import math
 import segmentation_models_pytorch as smp
 import cv2
-from DeepLabmodel import DeepLab
-from GNDeepLabmodel import GNDeepLab
-from GDILDeepLabmodel import GNDDeepLab
-from BDILDeepLabmodel import BNDDeepLab
+from Attention DeepLab import BNDDeepLab
 from deeplab import deeplab
 
 train_length = 1024
