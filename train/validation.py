@@ -21,7 +21,7 @@ def train(train_img, train_label, opt_name, train_epoch, model_path, last_model)
     val_data = openDataset(val_image_paths, val_label_paths, 'sigmoid')
     train_loader = DataLoader(dataset=dataset, batch_size=3, shuffle=True, num_workers=0)
     val_loader = DataLoader(dataset=val_data, batch_size=3, shuffle=True, num_workers=0)
-    model = Attention DeepLab.BNDDeepLab(12,1)
+    model = Attention_DeepLab.BNDDeepLab(4,1)
     if opt_name == 'SGD':
         opt = torch.optim.SGD(model.parameters(), lr=1e-4, momentum=0.9)
     else:
