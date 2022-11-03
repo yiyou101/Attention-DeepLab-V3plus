@@ -1,4 +1,3 @@
-from DeepLabmodel import DeepLab
 import torch
 import matplotlib.pyplot as plt
 import time
