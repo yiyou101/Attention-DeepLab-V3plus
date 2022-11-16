@@ -20,7 +20,7 @@ More documentation is provided in the form of docstrings throughout the code.
 
 ### Structure
 
-***utils**: The code for reading satellite images and ground truth labels in the form of pytorch datasets. This includes code for loss functions, data augmentation and Accuracy evaluation.
+***utils**: The code for reading satellite images and ground truth labels in the form of pytorch datasets. This includes code for loss functions, data augmentation and accuracy evaluation.
 
 ***model**: The attention DeepLab V3+ model architecture and parts.
 
