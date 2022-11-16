@@ -34,8 +34,8 @@ class ResNet34(nn.Module):  # 4*1024*1024
 
         self.layer1 = self.make_layer(64, 64, 3)  
         self.layer2 = self.make_layer(64, 128, 4, stride=2)  
-        self.layer3 = self.make_layer(128, 256, 6, stride=2,dilation=2)
-        self.layer4 = self.make_layer(256, 512, 3, stride=2,dilation=4)  
+        self.layer3 = self.make_layer(128, 256, 6, stride=2,dilation=1)
+        self.layer4 = self.make_layer(256, 512, 3, stride=2,dilation=1)  
         #self.fc = nn.Linear(512, num_classes)
 
     def make_layer(self, in_ch, out_ch, block_num, stride=1,dilation=1):
