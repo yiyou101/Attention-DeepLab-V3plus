@@ -3,7 +3,6 @@ from osgeo import gdal
 import numpy as np
 import glob
 import math
-import segmentation_models_pytorch as smp
 import cv2
 from Attention_DeepLab import BNDDeepLab
 from deeplab import deeplab
