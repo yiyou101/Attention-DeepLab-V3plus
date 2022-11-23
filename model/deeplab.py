@@ -150,28 +150,32 @@ class deeplab(nn.Module):
     def __init__(self, in_ch, num_classes,backbone="resnet34", downsample_factor=16):
         super(deeplab, self).__init__()
         if backbone == "resnet34":
-
             self.backbone = ResNet34(in_ch)
             in_channels = 512
             low_level_channels = 128
         if backbone == "resnet18":
-
             self.backbone = ResNet18(in_ch)
             in_channels = 512
             low_level_channels = 128
-
         self.aspp = ASPP(in_ch=in_channels, out_ch=256, rate=16 // downsample_factor)
-
-        self.low_att = nn.Sequential(
-            CBAM(low_level_channels),
-            nn.BatchNorm2d(low_level_channels),
-            nn.ReLU(inplace=True),
-        )
-
         self.shortcut_conv = nn.Sequential(
+            #CBAM(low_level_channels),
             nn.Conv2d(low_level_channels, 32, 1),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True)
+        )
+
+        self.block = nn.Sequential(
+            SeparableConv2d(
+                32 + 256,
+                256,
+                kernel_size=3,
+                padding=1,
+                bias=False,
+            ),
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Dropout(0.1),
         )
 
         self.cat_conv = nn.Sequential(
@@ -190,15 +194,43 @@ class deeplab(nn.Module):
 
     def forward(self, x):
         H, W = x.size(2), x.size(3)
-
         low_level_features, x = self.backbone(x)
         x = self.aspp(x)
-        #low_level_features = self.low_att(low_level_features)
         low_level_features = self.shortcut_conv(low_level_features)
 
         x = F.interpolate(x, size=(low_level_features.size(2), low_level_features.size(3)), mode='bilinear',
                           align_corners=True)
-        x = self.cat_conv(torch.cat((x, low_level_features), dim=1))
+        x = self.block(torch.cat((x, low_level_features), dim=1))
         x = self.cls_conv(x)
         x = F.interpolate(x, size=(H, W), mode='bilinear', align_corners=True)
         return x
+
+class SeparableConv2d(nn.Sequential):
+    def __init__(
+            self,
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride=1,
+            padding=0,
+            dilation=1,
+            bias=True,
+    ):
+        dephtwise_conv = nn.Conv2d(
+            in_channels,
+            in_channels,
+            kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            groups=in_channels,
+            bias=False,
+        )
+        pointwise_conv = nn.Conv2d(
+            in_channels,
+            out_channels,
+            kernel_size=1,
+            bias=bias,
+        )
+        super().__init__(dephtwise_conv, pointwise_conv)
+        
