@@ -4,7 +4,7 @@ This repository contains code for extracting the glacier outlines in high spatia
 
 For an explanation of the concepts, ideas and evaluation, see publication below. Please use the following citation when using the code for a publication:
 
-Chu, X., Yao, X., Duan, H., Chen, C., Li, J., and Pang, W.: Glacier extraction based on high spatial resolution remote sensing images using a deep learning approach with attention mechanism, The Cryosphere. https://doi.org/10.5194/tc-2022-61, 2022.
+Chu, X., Yao, X., Duan, H., Chen, C., Li, J., and Pang, W.: Glacier extraction based on high-spatial-resolution remote-sensing images using a deep-learning approach with attention mechanism, The Cryosphere, 16, 4273–4289, https://doi.org/10.5194/tc-16-4273-2022, 2022.
 
 More documentation is provided in the form of docstrings throughout the code.
 
