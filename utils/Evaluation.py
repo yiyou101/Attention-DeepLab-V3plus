@@ -10,8 +10,8 @@ def confusion_matrix(true_data,class_data):
     p0 = (class_data == 0).sum()
     FNandFP = ((true_data + class_data) == 1).sum()
     TN = ((true_data + class_data) == 0).sum()
-    FN = FNandFP - p0 + TN
-    FP =FNandFP - FN
+    FP = FNandFP - p0 + TN
+    FN = FNandFP - FP
     conf_m = np.array(((TP,FN),(FP,TN)))
     #print(conf_m.sum())
     oa = (TP + TN)/conf_m.sum()
