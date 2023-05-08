@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from torch.utils.data import Dataset,DataLoader
+from sklearn import model_selection
 import glob
 import cv2
 from image_utils import readTif,readTif_info
@@ -53,15 +54,17 @@ class test_openDataset(Dataset):
         return self.len
 
 @torch.no_grad()
-def Binary_validation(model, loader):
+def Binary_validation(model, loader,input_device):
     val_iou = []
     model.eval()
     activation_fn = nn.Sigmoid()
     for i,(image, target) in enumerate(loader):
-        image, target = image.to(DEVICE), target.to(DEVICE)
+        image, target = image.to(input_device), target.to(input_device)
         pred = model(image)
         pred = activation_fn(pred)
+        # 获取每个批次的大小 N
         N = target.size()[0]
+        smooth = 0.1
         input_flat = pred.view(N, -1)
         targets_flat = target.view(N, -1)
         intersection = input_flat * targets_flat
@@ -142,12 +145,11 @@ class BinaryDiceLoss(nn.Module):
     def forward(self, pred, target):
         pred = self.activation_fn(pred)
         N = target.size()[0]
+        smooth = 1
         input_flat = pred.view(N, -1)
         targets_flat = target.view(N, -1)
-        # 计算交集
         intersection = input_flat * targets_flat
         dice_eff = (2 * intersection.sum(1) + smooth) / (input_flat.sum(1) + targets_flat.sum(1) + smooth)
-        # 计算一个批次中平均每张图的损失
         loss = 1 - dice_eff.sum() / N
         return loss
 
@@ -163,3 +165,8 @@ class loss_joint(nn.Module):
         loss2 = self.loss_fn2(pred, target)
         loss = self.weight[0]*loss1 + self.weight[1]*loss2
         return loss
+
+def split_train_val(image_paths, label_paths,random=1, val_index=0):
+    train_image_paths, val_image_paths, train_label_paths, val_label_paths = \
+        model_selection.train_test_split(image_paths ,label_paths, random_state=random, train_size=val_index,test_size=1-val_index)
+    return train_image_paths, train_label_paths, val_image_paths, val_label_paths
