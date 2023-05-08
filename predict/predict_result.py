@@ -5,7 +5,6 @@ import glob
 import math
 import cv2
 from Attention_DeepLab import BNDDeepLab
-from deeplab import deeplab
 
 train_length = 1024
 
@@ -162,13 +161,9 @@ def predict(Model_Path, img_nor):
                 _, pred = torch.max(pred, dim=0)
                 print(pred.shape)
                 pred = np.array(pred)
-            #savepath = 'G:/DL/list2/' + str(a) + '.tif'
             a = a + 1
-            #writeTiff(pred, img_trans, img_proj, savepath)
             print('finish')
-            print(pred.shape)
             Pred_list.append(pred)
-            print('finish')
     return Pred_list
 
 if __name__ == '__main__':
