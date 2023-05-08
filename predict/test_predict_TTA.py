@@ -2,22 +2,9 @@ import torch
 from osgeo import gdal
 import numpy as np
 import glob
-import math
-from Attention_DeepLab import BNDDeepLab
 import cv2
-
-train_length = 1024
-
-def readTif(fileName):
-    dataset = gdal.Open(fileName)
-    if dataset == None:
-        print(fileName + "文件无法打开")
-    width = dataset.RasterXSize
-    height = dataset.RasterYSize
-    data = dataset.ReadAsArray(0, 0, width, height)
-    geotans = dataset.GetGeoTransform()
-    proj = dataset.GetProjection()
-    return data, geotans, proj
+from attention_deeplab import BNDDeepLab
+from image_utils import readTif_info
 
 def writeTiff(im_data, im_geotrans, im_proj, path):
     if 'int8' in im_data.dtype.name:
@@ -40,24 +27,26 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
         dataset.GetRasterBand(i + 1).WriteArray(im_data[i])
     del dataset
 
-def predict(Model_Path, img_nor):
+def predict(Model_Path, img_nor,path):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = BNDDeepLab(encoder_name='resnet34', in_channels=4, classes=1)
+    model = BNDDeepLab(in_ch=4, num_classes=1, backbone="resnet34", downsample_factor=16)
     model.to(device)
-    model.load_state_dict(torch.load(Model_Path))
-    Pred_list = []
+    model.load_state_dict(torch.load(Model_Path,map_location=torch.device('cpu')))
+    #Pred_list = []
     #a = 0
     model.eval()
-    for i in img_nor:
+    for i in range(len(img_nor)):
         with torch.no_grad():
-            im_data = np.array(i)
-            im_data_hor = np.flip(i, axis=2)  
-            im_data_vec = np.flip(i, axis=1)
+            name = img_nor[i].split('_')[-1]
+            im_data,tan, proj = readTif_info(img_nor[i])
+            im_data = prepro(im_data)
+            im_data = np.array(im_data)
+            im_data_hor = np.flip(im_data, axis=2) 
+            im_data_vec = np.flip(im_data, axis=1)
             im_data_dia = np.flip(im_data_vec, axis=2)
-            im_data_rotz = np.rot90(i, -1, (1, 2))
-            im_data_rotn = np.rot90(i, 1, (1, 2))
+            im_data_rotz = np.rot90(im_data, -1, (1, 2))
+            im_data_rotn = np.rot90(im_data, 1, (1, 2))
             img = np.array([im_data,im_data_hor,im_data_vec,im_data_dia,im_data_rotz,im_data_rotn])
-            print(img.shape)
             preds = []
             for j in img:
                 img_tensor = torch.from_numpy(np.array([j]))
@@ -65,46 +54,45 @@ def predict(Model_Path, img_nor):
                 pred = model(img_tensor)
                 if class_style == 'two_class':
                     pred = torch.sigmoid(pred)
-                    print(pred.shape)
                     pred = np.array(pred.data.cpu()[0])[0]
                 else:
                     pred = pred[0]
                     pred = torch.softmax(pred, dim=0).cpu()
                     _, pred = torch.max(pred, dim=0)
-                    print(pred.shape)
                     pred = np.array(pred)
                 preds.append(pred)
-                #savepath = 'G:/DL/list2/' + str(a) + '.tif'
-                #a = a + 1
-                #writeTiff(pred, img_trans, img_proj, savepath)
             preds = np.array(preds)
-            print(preds.shape)
+            #print(preds.shape)
             preds[1] = np.flip(preds[1], axis=1)
             preds[2] = np.flip(preds[2], axis=0)
             preds[3] = np.flip(np.flip(preds[3], axis=0), axis=1)
             preds[4] = np.rot90(preds[4], 1, (0, 1))
             preds[5] = np.rot90(preds[5], -1, (0, 1))
             pred = (preds[0]+preds[1]+preds[2]+preds[3]+preds[4]+preds[5])/6
-            print(pred.shape)
-        Pred_list.append(pred)
+            pred[pred > 0.5] = 1
+            pred[pred <= 0.5] = 0
+            #print(pred.shape)
+        #Pred_list.append(pred)
+        savepath = path + '/result_' + name
+        writeTiff(pred, tan, proj, savepath)
         print('finish')
-    return Pred_list
 
-def processing(im_data,ClipLength, Model_Path):
-    clip_list, row_sum, col_sum, re_row, re_col = clipTiff(im_data, ClipLength)
-    print(row_sum, col_sum)
-    img_normalization = normalization_generator(clip_list)
-    pred_list = predict(Model_Path, img_normalization)
-    result_shape = (im_data.shape[1], im_data.shape[2])
-    result = mosicTiff(pred_list, row_sum, col_sum, re_row, re_col, result_shape, ClipLength)
+
+def prepro(data):
+    result = np.zeros(data.shape, dtype=np.float32)
+    cv2.normalize(src=data, dst=result, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F, mask=None)
     return result
 
-model_path = r''
-img_list = glob.glob(r"")
-class_style = 'two_class'
-in_area = 0.9
-clipLength = int((1 - math.sqrt(in_area)) * train_length / 2)
-img_data, img_trans, img_proj = readTif(img_list[0])
-data_result = processing(img_data , clipLength, model_path)
-savepath = r''
-writeTiff(data_result, img_trans, img_proj, savepath)
+def normalization_generator(data_list):
+    for data in data_list:
+        result = np.zeros(data.shape, dtype=np.float32)
+        cv2.normalize(src=data, dst=result, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F, mask=None)
+        yield result
+
+if __name__ == '__main__':
+    model_path = r''
+    img_list = r""
+    class_style = 'two_class'
+    savep = r''
+    img_list = glob.glob(img_list)
+    pred_list = predict(model_path, img_list, savep)
