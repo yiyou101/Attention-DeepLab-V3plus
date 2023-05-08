@@ -20,7 +20,6 @@ def writeTiff(im_data, im_geotrans, im_proj, path):
     elif len(im_data.shape) == 2:
         im_data = np.array([im_data])
         im_bands,im_height, im_width =im_data.shape
-    # 创建文件
     driver = gdal.GetDriverByName("GTiff")
     dataset = driver.Create(path, int(im_width), int(im_height), int(im_bands), datatype)
     if (dataset != None):
@@ -40,18 +39,15 @@ def predict(Model_Path, img_nor,path):
     model.eval()
     for i in range(len(img_nor)):
         with torch.no_grad():
-            name = img_nor[i][36:]
+            name = img_nor[i].split('\\')[-1]
             im_data,tan, proj = readTif_info(img_nor[i])
             im_data = prepro(im_data)
             img_tensor = torch.from_numpy(np.array([im_data]))
             img_tensor = img_tensor.to(device=device)
             pred = model(img_tensor)
-            # 提取结果
             if class_style == 'two_class':
                 pred = torch.sigmoid(pred)
-                #获取onehot类别下标，就可以得出所分出的是哪个类
                 print(pred.shape)
-                #将四维将为二维
                 pred = np.array(pred.data.cpu()[0])[0]
             else:
                 pred = pred[0]
@@ -63,7 +59,7 @@ def predict(Model_Path, img_nor,path):
             pred[pred <= 0.5] = 0
             #print(pred.shape)
         #Pred_list.append(pred)
-        savepath = path + '/result' + name
+        savepath = path + '/result_' + name
         writeTiff(pred, tan, proj, savepath)
         print('finish')
 
